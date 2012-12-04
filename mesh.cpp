@@ -375,7 +375,7 @@ void Mesh::saveVtk(
 		int g = 4;
 		f.write(swap(&g), sizeof(int));
 		for (int j = 0; j < 4; j++) {
-			int idx = el->p[0]->index;
+			int idx = el->p[j]->index;
 			f.write(swap(&idx), sizeof(int));
 		}
 	}
