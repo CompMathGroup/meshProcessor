@@ -96,6 +96,7 @@ void Mesh::fromVol(
 	fillData(vertex2face, nV, nB, nT, vert, bnd, tet, bndmat, tetmat);
 	
 	int bnd_idx = 0;
+#pragma omp parallel for
 	for (int i = 0; i < nFaces; i++) {
 		TriFace *f = static_cast<TriFace *>(faces[i]);
 		Vertex *p1 = f->p[0], *p2 = f->p[1], *p3 = f->p[2];
