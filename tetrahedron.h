@@ -38,29 +38,30 @@ public:
 
 	/** Construct tetrahedron from four vertices */
 	tetrahedron(vertex &p1, vertex &p2, vertex &p3, vertex &p4) {
-		p[0] = &p1;
-		p[1] = &p2;
-		p[2] = &p3;
-		p[3] = &p4;
+		_p[0] = &p1;
+		_p[1] = &p2;
+		_p[2] = &p3;
+		_p[3] = &p4;
 
-		f[0] = new face(p2, p3, p4, *this);
-		f[1] = new face(p1, p4, p3, *this);
-		f[2] = new face(p1, p2, p4, *this);
-		f[3] = new face(p1, p3, p2, *this);
+		for (int j = 0; j < 4; j++)
+			_p[j]->add(this, j);
 
-		center += p1;
-		center += p2;
-		center += p3;
-		center += p4;
-		center *= 0.25;
+		_f[0] = new face(p2, p3, p4, this);
+		_f[1] = new face(p1, p4, p3, this);
+		_f[2] = new face(p1, p2, p4, this);
+		_f[3] = new face(p1, p3, p2, this);
 
-		volume = 1. / 6 * (p3 - p4).dot((p1 - p4) % (p2 - p4));
+		_center += p1.r();
+		_center += p2.r();
+		_center += p3.r();
+		_center += p4.r();
+		_center *= 0.25;
+
+		_volume = 1. / 6 * (p3.r() - p4.r()).dot((p1.r() - p4.r()) % (p2.r() - p4.r()));
 	}
 
 	/** Destroy tetrahedron object */
 	~tetrahedron() {
-		for (int i = 0; i < 4; i++)
-			delete f[i];
 	}
 };
 

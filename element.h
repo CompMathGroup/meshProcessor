@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+namespace mesh3d {
+
 /** Represents mesh element. Every mesh element has index and color */
 class element {
 	index _color;
@@ -27,5 +29,7 @@ public:
 		_color = color;
 	}
 };
+
+}
 
 #endif

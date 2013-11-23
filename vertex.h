@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "element.h"
 #include <vector>
+#include <algorithm>
 
 namespace mesh3d {
 
@@ -16,6 +17,7 @@ struct tet_vertex {
 	int li; //!< local index of vertex in the tetrahedron
 	/** Construct using tetrahedron pointer and local vertex index */
 	tet_vertex(const tetrahedron *tet, int local_idx) : t(tet), li(local_idx) { }
+	static bool less(const tet_vertex &a, const tet_vertex &b) { return a.t < b.t; }
 };
 
 /** A pair of face with local vertex index in it */
@@ -24,6 +26,7 @@ struct face_vertex {
 	int li; //!< local index of vertex in the face
 	/** Construct using face pointer and local vertex index */
 	face_vertex(const face *fac, int local_idx) : f(fac), li(local_idx) { }
+	static bool less(const face_vertex &a, const face_vertex &b) { return a.f < b.f; }
 };
 
 /** A class that repesents single vertex in the mesh */
@@ -60,6 +63,12 @@ public:
 	/** Add a face to vertex faces list */
 	void add(const face *f, int li) {
 		_faces.push_back(face_vertex(f, li));
+	}
+
+	/** Sort tetrahedrons and faces lists */
+	void sort_lists() {
+		std::sort(_elements.begin(), _elements.end(), tet_vertex::less);
+		std::sort(_faces.begin(), _faces.end(), face_vertex::less);
 	}
 };
 

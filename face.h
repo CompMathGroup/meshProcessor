@@ -10,8 +10,6 @@ namespace mesh3d {
 
 /** A class that represents a single face from mesh */
 class face : public element {
-	const index _color;
-
 	vertex *_p[3];
 	tetrahedron *_tet;
 	face *_flip;
@@ -24,12 +22,15 @@ class face : public element {
 	face &operator =(const face &other);
 public:
 	/** Construct a face with three vertices p1, p2 and p3 and tetrahedron t */
-	face(vertex &p1, vertex &p2, vertex &p3, tetrahedron &t) {
+	face(vertex &p1, vertex &p2, vertex &p3, tetrahedron *t) {
 		_p[0] = &p1;
 		_p[1] = &p2;
 		_p[2] = &p3;
 
-		_tet = &t;
+		for (int j = 0; j < 3; j++)
+			_p[j]->add(this, j);
+
+		_tet = t;
 
 		_center += p1.r();
 		_center += p2.r();
