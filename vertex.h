@@ -33,7 +33,7 @@ struct face_vertex {
 class vertex : public element {
 	vector _r;
 
-	std::vector<tet_vertex> _elements;
+	std::vector<tet_vertex> _tetrahedrons;
 	std::vector<face_vertex> _faces;
 
 	vertex(const vertex &p);
@@ -46,8 +46,8 @@ public:
 	const vector &r() const { return _r; }
 
 	/** Get a list of tetrahedrons that contain this vertex */
-	const std::vector<tet_vertex> &elements() const {
-		return _elements;
+	const std::vector<tet_vertex> &tetrahedrons() const {
+		return _tetrahedrons;
 	}
 	
 	/** Get a list of faces that contain this vertex */
@@ -57,7 +57,7 @@ public:
 
 	/** Add a tetrahedron to vertex tetrahedrons list */
 	void add(const tetrahedron *t, int li) {
-		_elements.push_back(tet_vertex(t, li));
+		_tetrahedrons.push_back(tet_vertex(t, li));
 	}
 
 	/** Add a face to vertex faces list */
@@ -67,7 +67,7 @@ public:
 
 	/** Sort tetrahedrons and faces lists */
 	void sort_lists() {
-		std::sort(_elements.begin(), _elements.end(), tet_vertex::less);
+		std::sort(_tetrahedrons.begin(), _tetrahedrons.end(), tet_vertex::less);
 		std::sort(_faces.begin(), _faces.end(), face_vertex::less);
 	}
 };

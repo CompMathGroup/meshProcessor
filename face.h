@@ -4,9 +4,9 @@
 #include "vertex.h"
 #include "element.h"
 
-class tetrahedron;
-
 namespace mesh3d {
+
+class tetrahedron;
 
 /** A class that represents a single face from mesh */
 class face : public element {
@@ -75,8 +75,13 @@ public:
 		return _normal;
 	}
 
+	/** Return face center */
+	const vector &center() const {
+		return _center;
+	}
+
 	/** Get flipped face */
-	face &flip() const {
+	const face &flip() const {
 		MESH3D_ASSERT(_flip);
 		return *_flip;
 	}

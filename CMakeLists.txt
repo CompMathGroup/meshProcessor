@@ -4,7 +4,10 @@ set (mesh3d_SOURCES
 	vol_mesh.cpp
 	mesh.cpp
 	common.cpp
+	vtk_stream.cpp
 )
+
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 add_library(mesh3d STATIC ${mesh3d_SOURCES})
 

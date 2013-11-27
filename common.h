@@ -48,6 +48,18 @@ public:
 	void push_back(T *p) { _data.push_back(p); }
 };
 
+/** A class representing float3 or double3 datatype */
+template <class T>
+struct vec {
+	T x; //!< x component
+	T y; //!< y component
+	T z; //!< z component
+	/** Construct with zeros */
+	vec() : x(0), y(0), z(0) { }
+	/** Construct from components */
+	vec(T x, T y, T z) : x(x), y(y), z(z) { }
+};
+
 }
 
 #if !defined(NDEBUG)
