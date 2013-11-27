@@ -2,8 +2,11 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
+#include <stdint.h>
 
 using namespace mesh3d;
+
+const uint64_t MESH3D_SIGNATURE = 0x004853454d544554ull;
 
 typedef std::vector<face_vertex>::const_iterator face_iter_t;
 
@@ -31,7 +34,8 @@ const face *three_way_find_except(face_iter_t x, face_iter_t y, face_iter_t z, c
 	}
 }
 
-mesh::mesh(const simple_mesh &sm) {
+mesh::mesh(const simple_mesh &sm, uint64_t dom) {
+	_domain = dom;
 	index nV = sm.num_vertices();
 	for (index i = 0; i < nV; i++) {
 		const double *p = sm.vertex_coord(i);
@@ -81,6 +85,175 @@ mesh::mesh(const simple_mesh &sm) {
 
 		const face *flip = three_way_find_except(f1.begin(), f2.begin(), f3.begin(), f);
 		f->set_flip(const_cast<face &>(*flip));
+	}
+}
+
+/*
+	Mesh format
+
+	u64 sig // signature - TETMESH\0
+	u64 dom // domain #
+	u64 nV // vertex #
+	u64 nT // tets #
+	u64 nB // boundary faces #
+	u64 nI // interface vertex #
+	f64 vertex[3xnV] // vertex x, y, z
+	u64 tets[4xnT] // tet vertex ids
+	u64 bnds[3xnB] // bnd faces vertex ids
+	s64 vcol[nV] // vertex color
+	s64 tcol[nT] // tet color
+	s64 fcol[4xnT+nB] // face color
+	u64 flips[4xnT+nB] // flipped faces
+	nI x {
+		u64 idx // vertex id
+		u64 nA // number of aliases for this vertex
+		nA x {
+			u64 other_domain
+			u64 remote_idx
+		}
+	}
+*/
+mesh::mesh(std::istream &is) {
+	uint64_t sig;
+	uint64_t nV, nT, nB, nI, dom;
+	double p[3];
+	uint64_t v[4];
+	uint64_t b[3];
+
+	is.read(reinterpret_cast<char *>(&sig), sizeof(sig));
+	if (sig != MESH3D_SIGNATURE)
+		throw std::invalid_argument("Invalid mesh file signature");
+	is.read(reinterpret_cast<char *>(&dom), sizeof(dom));
+	_domain = dom;
+	is.read(reinterpret_cast<char *>(&nV), sizeof(nV));
+	is.read(reinterpret_cast<char *>(&nT), sizeof(nT));
+	is.read(reinterpret_cast<char *>(&nB), sizeof(nB));
+	is.read(reinterpret_cast<char *>(&nI), sizeof(nI));
+	for (uint64_t i = 0; i < nV; i++) {
+		is.read(reinterpret_cast<char *>(&p[0]), sizeof(p));
+		_vertices.push_back(new vertex(vector(p[0], p[1], p[2])));
+	}
+	for (uint64_t i = 0; i < nT; i++) {
+		is.read(reinterpret_cast<char *>(&v[0]), sizeof(v));
+		_tets.push_back(new tetrahedron(
+			_vertices[v[0]], _vertices[v[1]], 
+			_vertices[v[2]], _vertices[v[3]]));
+		_tets[i].set_idx(i);
+		for (int j = 0; j < 4; j++)
+			_faces.push_back(&_tets[i].f(j));
+	}
+	for (uint64_t i = 0; i < nB; i++) {
+		is.read(reinterpret_cast<char *>(&b[0]), sizeof(b));
+		_faces.push_back(new face(
+			_vertices[b[0]], _vertices[b[1]], _vertices[b[2]], 0));
+	}
+	for (uint64_t i = 0; i < nV; i++) {
+		int64_t col;
+		is.read(reinterpret_cast<char *>(&col), sizeof(col));
+		_vertices[i].set_color(col);
+		_vertices[i].set_idx(i);
+	}
+	for (uint64_t i = 0; i < nT; i++) {
+		int64_t col;
+		is.read(reinterpret_cast<char *>(&col), sizeof(col));
+		_tets[i].set_color(col);
+		_tets[i].set_idx(i);
+	}
+	for (uint64_t i = 0; i < 4 * nT + nB; i++) {
+		int64_t col;
+		is.read(reinterpret_cast<char *>(&col), sizeof(col));
+		_faces[i].set_color(col);
+		_faces[i].set_idx(i);
+	}
+	for (uint64_t i = 0; i < 4 * nT + nB; i++) {
+		uint64_t flip;
+		is.read(reinterpret_cast<char *>(&flip), sizeof(flip));
+		_faces[i].set_flip(_faces[flip]);
+	}
+	for (uint64_t i = 0; i < nI; i++) {
+		uint64_t vi, nA;
+		is.read(reinterpret_cast<char *>(&vi), sizeof(vi));
+		is.read(reinterpret_cast<char *>(&nA), sizeof(nA));
+		for (uint64_t j = 0; j < nA; j++) {
+			uint64_t did, rid;
+			is.read(reinterpret_cast<char *>(&did), sizeof(did));
+			is.read(reinterpret_cast<char *>(&rid), sizeof(rid));
+			_vertices[vi].add(did, rid);
+		}
+	}
+}
+
+void mesh::serialize(std::ostream &os) const {
+	uint64_t sig = MESH3D_SIGNATURE;
+	uint64_t nV, nT, nB, nI;
+	uint64_t dom = _domain;
+	double p[3];
+	uint64_t v[4];
+	uint64_t b[3];
+
+	nV = _vertices.size();
+	nT = _tets.size();
+	nB = _faces.size() - 4 * nT;
+	nI = 0;
+	for (uint64_t i = 0; i < nV; i++)
+		if (_vertices[i].aliases().size() > 0)
+			nI++;
+
+	os.write(reinterpret_cast<char *>(&sig), sizeof(sig));
+	os.write(reinterpret_cast<char *>(&dom), sizeof(dom));
+	os.write(reinterpret_cast<char *>(&nV), sizeof(nV));
+	os.write(reinterpret_cast<char *>(&nT), sizeof(nT));
+	os.write(reinterpret_cast<char *>(&nB), sizeof(nB));
+	os.write(reinterpret_cast<char *>(&nI), sizeof(nI));
+	for (uint64_t i = 0; i < nV; i++) {
+		const vertex &vr = _vertices[i];
+		p[0] = vr.r().x;
+		p[1] = vr.r().y;
+		p[2] = vr.r().z;
+		os.write(reinterpret_cast<char *>(&p[0]), sizeof(p));
+	}
+	for (uint64_t i = 0; i < nT; i++) {
+		const tetrahedron &tet = _tets[i];
+		for (int j = 0; j < 4; j++)
+			v[j] = tet.p(j).idx();
+		os.write(reinterpret_cast<char *>(&v[0]), sizeof(v));
+	}
+	for (uint64_t i = 0; i < nB; i++) {
+		const face &f = _faces[4 * nT + i];
+		for (int j = 0; j < 3; j++)
+			b[j] = f.p(j).idx();
+		os.write(reinterpret_cast<char *>(&b[0]), sizeof(b));
+	}
+	for (uint64_t i = 0; i < nV; i++) {
+		int64_t col = _vertices[i].color();
+		os.write(reinterpret_cast<char *>(&col), sizeof(col));
+	}
+	for (uint64_t i = 0; i < nT; i++) {
+		int64_t col = _tets[i].color();
+		os.write(reinterpret_cast<char *>(&col), sizeof(col));
+	}
+	for (uint64_t i = 0; i < 4 * nT + nB; i++) {
+		int64_t col = _faces[i].color();
+		os.write(reinterpret_cast<char *>(&col), sizeof(col));
+	}
+	for (uint64_t i = 0; i < 4 * nT + nB; i++) {
+		uint64_t flip = _faces[i].flip().idx();
+		os.write(reinterpret_cast<char *>(&flip), sizeof(flip));
+	}
+	for (uint64_t i = 0; i < nV; i++) {
+		uint64_t nA = _vertices[i].aliases().size();
+		if (nA == 0)
+			continue;
+		os.write(reinterpret_cast<char *>(&i), sizeof(i));
+		os.write(reinterpret_cast<char *>(&nA), sizeof(nA));
+		for (uint64_t j = 0; j < nA; j++) {
+			const dom_vertex &dv = _vertices[i].aliases()[j];
+			uint64_t did, rid;
+			did = dv.domain_id;
+			rid = dv.remote_idx;
+			os.write(reinterpret_cast<char *>(&did), sizeof(did));
+			os.write(reinterpret_cast<char *>(&rid), sizeof(rid));
+		}
 	}
 }
 
