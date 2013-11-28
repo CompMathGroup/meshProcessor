@@ -34,7 +34,96 @@ const face *three_way_find_except(face_iter_t x, face_iter_t y, face_iter_t z, c
 	}
 }
 
-mesh::mesh(const simple_mesh &sm, uint64_t dom) {
+mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
+	_domain = dom;
+	typedef std::map<index, index> mapping_t;
+	mapping_t tg2l;
+	std::vector<index> tl2g;
+	const mapping_t &g2l = tg.mapping()[dom];
+	
+	for (mapping_t::const_iterator it = g2l.begin();
+		it != g2l.end(); it++)
+	{
+		const vertex &v = m.vertices()[it->first];
+		_vertices.push_back(new vertex(v.r()));
+		_vertices.back().set_color(v.color());
+	}
+
+	index nT = m.tets().size();
+	for (index i = 0, k = 0; k < nT; k++) {
+		const tetrahedron &tet = m.tets()[k];
+		if (tg.colors()[tet.idx()] != dom)
+			continue;
+		index v[4];
+		for (int j = 0; j < 4; j++)
+			v[j] = g2l.find(tet.p(j).idx())->second;
+		_tets.push_back(new tetrahedron(
+			_vertices[v[0]], _vertices[v[1]], 
+			_vertices[v[2]], _vertices[v[3]]));
+		_tets[i].set_color(tet.color());
+		for (int j = 0; j < 4; j++) {
+			_faces.push_back(&_tets[i].f(j));
+			_tets[i].f(j).set_color(tet.f(j).color());
+		}
+		tg2l[k] = i;
+		tl2g.push_back(k);
+		i++;
+	}
+	nT = tl2g.size();
+
+	index b[3];
+	for (index i = 0; i < nT; i++) {
+		index gi = tl2g[i];
+		const tetrahedron &tet = m.tets()[gi];
+		for (int j = 0; j < 4; j++) {
+			const face &f = tet.f(j).flip();
+			for (int k = 0; k < 3; k++) {
+				index gi = f.p(k).idx();
+				b[k] = g2l.find(gi)->second;
+				vertex &vx = _vertices[b[k]];
+				for (index d = 0; d < tg.mapping().size(); d++) {
+					if (d == dom)
+						continue;
+					const mapping_t &dmap = tg.mapping()[d];
+					mapping_t::const_iterator mit = dmap.find(gi);
+					if (mit != dmap.end())
+						vx.add(d, mit->second);
+				}
+			}
+			if (f.is_border() || tg.colors()[f.tet().idx()] != dom) {
+				_faces.push_back(new face(
+					_vertices[b[0]], _vertices[b[1]], _vertices[b[2]], 0, -1));
+				_faces.back().set_color(f.color());
+				_faces.back().set_flip(_tets[i].f(j));
+				_tets[i].f(j).set_flip(_faces.back());
+			} 
+		}
+	}
+
+	for (index i = 0; i < nT; i++) {
+		index gi = tl2g[i];
+		const tetrahedron &tet = m.tets()[gi];
+		for (int j = 0; j < 4; j++) {
+			const face &f = tet.f(j).flip();
+			if (!f.is_border() && tg.colors()[f.tet().idx()] == dom) {
+				const index other_tet = tg2l[f.tet().idx()];
+				int fi = f.face_local_index();
+				_tets[i].f(j).set_flip(_tets[other_tet].f(fi));
+			} 
+		}
+	}
+
+	for (index i = 0; i < _vertices.size(); i++)
+		_vertices[i].set_idx(i);
+
+	for (index i = 0; i < _tets.size(); i++)
+		_tets[i].set_idx(i);
+
+	for (index i = 0; i < _faces.size(); i++)
+		_faces[i].set_idx(i);
+}
+
+mesh::mesh(const simple_mesh &sm, index dom) {
 	_domain = dom;
 	index nV = sm.num_vertices();
 	for (index i = 0; i < nV; i++) {
@@ -60,7 +149,7 @@ mesh::mesh(const simple_mesh &sm, uint64_t dom) {
 	for (index i = 0; i < nB; i++) {
 		const index *v = sm.bnd_verts(i);
 		_faces.push_back(new face(
-			_vertices[v[0]], _vertices[v[1]], _vertices[v[2]], 0));
+			_vertices[v[0]], _vertices[v[1]], _vertices[v[2]], 0, -1));
 		_faces[i].set_color(sm.bnd_material(i));
 	}
 
@@ -145,7 +234,7 @@ mesh::mesh(std::istream &is) {
 	for (uint64_t i = 0; i < nB; i++) {
 		is.read(reinterpret_cast<char *>(&b[0]), sizeof(b));
 		_faces.push_back(new face(
-			_vertices[b[0]], _vertices[b[1]], _vertices[b[2]], 0));
+			_vertices[b[0]], _vertices[b[1]], _vertices[b[2]], 0, -1));
 	}
 	for (uint64_t i = 0; i < nV; i++) {
 		int64_t col;
@@ -246,14 +335,104 @@ void mesh::serialize(std::ostream &os) const {
 			continue;
 		os.write(reinterpret_cast<char *>(&i), sizeof(i));
 		os.write(reinterpret_cast<char *>(&nA), sizeof(nA));
-		for (uint64_t j = 0; j < nA; j++) {
-			const dom_vertex &dv = _vertices[i].aliases()[j];
+		for (std::map<index, index>::const_iterator it = _vertices[i].aliases().begin();
+			it != _vertices[i].aliases().end(); it++)
+		{
 			uint64_t did, rid;
-			did = dv.domain_id;
-			rid = dv.remote_idx;
+			did = it->first;
+			rid = it->second;
 			os.write(reinterpret_cast<char *>(&did), sizeof(did));
 			os.write(reinterpret_cast<char *>(&rid), sizeof(rid));
 		}
+	}
+}
+
+void mesh::dump(std::ostream &os) const {
+	uint64_t nV, nT, nB, nI;
+	uint64_t dom = _domain;
+	double p[3];
+	uint64_t v[4];
+	uint64_t b[3];
+
+	nV = _vertices.size();
+	nT = _tets.size();
+	nB = _faces.size() - 4 * nT;
+	nI = 0;
+	for (uint64_t i = 0; i < nV; i++)
+		if (_vertices[i].aliases().size() > 0)
+			nI++;
+
+	os << "Mesh dump" << std::endl;
+	os << "Domain #" << dom << std::endl;
+	os << "Vertices: " << nV << std::endl;
+	os << "Tetras: " << nT << std::endl;
+	os << "Boundary faces: " << nB << std::endl;
+	os << "Interface vertex: " << nI << std::endl;
+
+	os << "Vertices: " << std::endl;
+	for (uint64_t i = 0; i < nV; i++) {
+		const vertex &vr = _vertices[i];
+		p[0] = vr.r().x;
+		p[1] = vr.r().y;
+		p[2] = vr.r().z;
+		os << i << ". r = (" << p[0] << ", " << p[1] << ", " << p[2] << ")" << std::endl;
+	}
+
+	os << "Tetras: " << std::endl;
+	for (uint64_t i = 0; i < nT; i++) {
+		const tetrahedron &tet = _tets[i];
+		for (int j = 0; j < 4; j++)
+			v[j] = tet.p(j).idx();
+		os << i << ". v = (" << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3] << ")" << std::endl;
+	}
+
+	os << "Boundary faces: " << std::endl;
+	for (uint64_t i = 0; i < nB; i++) {
+		const face &f = _faces[4 * nT + i];
+		for (int j = 0; j < 3; j++)
+			b[j] = f.p(j).idx();
+		os << i << ". v = (" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl;
+	}
+
+	os << "Vert colors: " << std::endl;
+	for (uint64_t i = 0; i < nV; i++) {
+		int64_t col = _vertices[i].color();
+		os << i << ". " << col << std::endl;
+	}
+
+	os << "Tet colors: " << std::endl;
+	for (uint64_t i = 0; i < nT; i++) {
+		int64_t col = _tets[i].color();
+		os << i << ". " << col << std::endl;
+	}
+	
+	os << "Face colors: " << std::endl;
+	for (uint64_t i = 0; i < 4 * nT + nB; i++) {
+		int64_t col = _faces[i].color();
+		os << i << ". " << col << std::endl;
+	}
+
+	os << "Face flips: " << std::endl;
+	for (uint64_t i = 0; i < 4 * nT + nB; i++) {
+		uint64_t flip = _faces[i].flip().idx();
+		os << i << ". " << flip << std::endl;
+	}
+
+	os << "Aliases: " << std::endl;
+	for (uint64_t i = 0; i < nV; i++) {
+		uint64_t nA = _vertices[i].aliases().size();
+		if (nA == 0)
+			continue;
+		os << i << ". ";
+		for (std::map<index, index>::const_iterator it = _vertices[i].aliases().begin();
+			it != _vertices[i].aliases().end(); it++)
+		{
+			uint64_t did, rid;
+			did = it->first;
+			rid = it->second;
+			os << "(" << did << ":" << rid << ") ";
+		}
+		os << std::endl;
 	}
 }
 

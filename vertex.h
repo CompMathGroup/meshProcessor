@@ -4,8 +4,8 @@
 #include "vector.h"
 #include "element.h"
 #include <vector>
+#include <map>
 #include <algorithm>
-#include <stdint.h>
 
 namespace mesh3d {
 
@@ -35,9 +35,9 @@ struct face_vertex {
 /** A pair to identify vertex in other domains */
 struct dom_vertex {
 	index remote_idx;
-	uint64_t domain_id;
+	index domain_id;
 	/** Construct using domain id and remote index  */
-	dom_vertex(uint64_t domain_id, index remote_idx) : remote_idx(remote_idx), domain_id(domain_id) { }
+	dom_vertex(index domain_id, index remote_idx) : remote_idx(remote_idx), domain_id(domain_id) { }
 	/** Comparator for sorting */
 	static bool less(const dom_vertex &a, const dom_vertex &b) { return a.domain_id < b.domain_id; }
 };
@@ -48,7 +48,7 @@ class vertex : public element {
 
 	std::vector<tet_vertex> _tetrahedrons;
 	std::vector<face_vertex> _faces;
-	std::vector<dom_vertex> _aliases;
+	std::map<index, index> _aliases;
 
 	vertex(const vertex &p);
 	vertex &operator =(const vertex &p);
@@ -69,8 +69,8 @@ public:
 		return _faces;
 	}
 
-	/** Get a list of foreign aliases for this vertex */
-	const std::vector<dom_vertex> &aliases() const {
+	/** Get a map of foreign aliases for this vertex domain -> index in domain */
+	const std::map<index, index> &aliases() const {
 		return _aliases;
 	}
 
@@ -85,15 +85,14 @@ public:
 	}
 
 	/** Add an alias from another domain */
-	void add(int domain_id, index remote_idx) {
-		_aliases.push_back(dom_vertex(domain_id, remote_idx));
+	void add(index domain_id, index remote_idx) {
+		_aliases[domain_id] = remote_idx;
 	}
 
 	/** Sort tetrahedrons and faces lists */
 	void sort_lists() {
 		std::sort(_tetrahedrons.begin(), _tetrahedrons.end(), tet_vertex::less);
 		std::sort(_faces.begin(), _faces.end(), face_vertex::less);
-		std::sort(_aliases.begin(), _aliases.end(), dom_vertex::less);
 	}
 };
 

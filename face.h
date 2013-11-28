@@ -18,11 +18,13 @@ class face : public element {
 	vector _center;
 	double _surface;
 
+	int _tet_fi;
+
 	face(const face &other);
 	face &operator =(const face &other);
 public:
 	/** Construct a face with three vertices p1, p2 and p3 and tetrahedron t */
-	face(vertex &p1, vertex &p2, vertex &p3, tetrahedron *t) {
+	face(vertex &p1, vertex &p2, vertex &p3, tetrahedron *t, int face_index) {
 		_p[0] = &p1;
 		_p[1] = &p2;
 		_p[2] = &p3;
@@ -43,6 +45,7 @@ public:
 		_normal *= 0.5 / _surface;
 
 		_flip = 0;
+		_tet_fi = face_index;
 	}
 	
 	/** Checks if face is a border face */
@@ -54,6 +57,12 @@ public:
 	tetrahedron &tet() const {
 		MESH3D_ASSERT(!is_border());
 		return *_tet;
+	}
+
+	/** Get face index in tetrahedron */
+	int face_local_index() const {
+		MESH3D_ASSERT(!is_border());
+		return _tet_fi;
 	}
 
 	/** Get vertex using local index */

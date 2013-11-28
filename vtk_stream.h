@@ -24,21 +24,28 @@ class vtk_stream {
 	const std::string name() const;
 
 public:
+	/** Construct vtk stream for specified file */
 	vtk_stream(const char *fn);
+	/** Write vtk header */
 	void write_header(const mesh &m, const std::string &comment = "comment");
 
+	/** Append scalar cell data to vtk file */
 	template <class T>
 	void append_cell_data(const T *v, const std::string &id);
 
+	/** Append scalar point data to vtk file */
 	template <class T>
 	void append_point_data(const T *v, const std::string &id);
 
+	/** Append vector cell data to vtk file */
 	template <class T>
 	void append_cell_data(const vec<T> *v, const std::string &id);
 
+	/** Append vector point data to vtk file */
 	template <class T>
 	void append_point_data(const vec<T> *v, const std::string &id);
-
+	
+	/** Finalize vtk file */
 	void close() {
 		if (!cell_data_written) {
 			cell_data_written = true;
@@ -51,6 +58,7 @@ public:
 		o.close();
 	}
 
+	/** Finalize and destroy vtk file */
 	~vtk_stream() {
 		close();
 	}

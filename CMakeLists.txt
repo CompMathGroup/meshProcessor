@@ -5,6 +5,8 @@ set (mesh3d_SOURCES
 	mesh.cpp
 	common.cpp
 	vtk_stream.cpp
+	graph.cpp
+	mesh_graph.cpp
 )
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")

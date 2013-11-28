@@ -46,6 +46,10 @@ public:
 	void resize(size_t newsize, T *p = 0) { _data.resize(newsize, p); }
 	/** Add a pointer to ptr_vector */
 	void push_back(T *p) { _data.push_back(p); }
+	/** Return reference to last element */
+	T &back() { return *_data.back(); }
+	/** Return const reference to last element */
+	const T &back() const { return *_data.back(); }
 };
 
 /** A class representing float3 or double3 datatype */

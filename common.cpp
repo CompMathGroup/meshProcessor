@@ -6,6 +6,6 @@ void mesh3d::assert(bool condition, const std::string message, const std::string
 	if (condition)
 		return;
 
-	std::cerr << "Assertation `" << message << "'failed in file " << file << " on line " << line << std::endl;
+	std::cerr << "Assertation `" << message << "' failed in file " << file << " on line " << line << std::endl;
 	abort();
 }

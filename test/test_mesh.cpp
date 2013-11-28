@@ -7,22 +7,14 @@
 using namespace mesh3d;
 
 int main() {
-	std::unique_ptr<simple_mesh> sm;
 	try {
-		sm = std::unique_ptr<simple_mesh>(new vol_mesh("mesh.vol"));
-		mesh m(*sm.get());
+		vol_mesh vm("mesh.vol");
+		mesh m(vm);
 		bool res = m.check(&std::cout);
 		std::cout << "Mesh check: " << (res ? "OK" : "failed") << std::endl;
 		std::fstream f("mesh.m3d", std::ios::binary | std::ios::out);
 		m.serialize(f);
 		f.close();
-		std::fstream g("mesh.m3d", std::ios::binary | std::ios::in);
-		mesh m2(g);
-		res = m2.check(&std::cout);
-		std::cout << "Mesh2 check: " << (res ? "OK" : "failed") << std::endl;
-		std::fstream h("mesh2.m3d", std::ios::binary | std::ios::out);
-		m2.serialize(h);
-		h.close();
 		std::vector<float> u(m.vertices().size());
 		for (index i = 0; i < m.vertices().size(); i++) {
 			u[i] = m.vertices()[i].r().norm();

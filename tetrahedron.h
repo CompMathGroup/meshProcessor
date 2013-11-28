@@ -46,10 +46,10 @@ public:
 		for (int j = 0; j < 4; j++)
 			_p[j]->add(this, j);
 
-		_f[0] = new face(p2, p3, p4, this);
-		_f[1] = new face(p1, p4, p3, this);
-		_f[2] = new face(p1, p2, p4, this);
-		_f[3] = new face(p1, p3, p2, this);
+		_f[0] = new face(p2, p3, p4, this, 0);
+		_f[1] = new face(p1, p4, p3, this, 1);
+		_f[2] = new face(p1, p2, p4, this, 2);
+		_f[3] = new face(p1, p3, p2, this, 3);
 
 		_center += p1.r();
 		_center += p2.r();
