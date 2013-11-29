@@ -38,7 +38,7 @@ protected:
 				_adj.push_back(*it);
 			}
 		}
-		MESH3D_ASSERT(_adj.size() == _nadj.back());
+		MESH3D_ASSERT(_adj.size() == static_cast<size_t>(_nadj.back()));
 	}
 protected:	
 	bool partition(index num_parts);

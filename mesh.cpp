@@ -52,7 +52,7 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 	index nT = m.tets().size();
 	for (index i = 0, k = 0; k < nT; k++) {
 		const tetrahedron &tet = m.tets()[k];
-		if (tg.colors()[tet.idx()] != dom)
+		if (static_cast<index>(tg.colors()[tet.idx()]) != dom)
 			continue;
 		index v[4];
 		for (int j = 0; j < 4; j++)
@@ -90,7 +90,7 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 						vx.add(d, mit->second);
 				}
 			}
-			if (f.is_border() || tg.colors()[f.tet().idx()] != dom) {
+			if (f.is_border() || static_cast<index>(tg.colors()[f.tet().idx()]) != dom) {
 				_faces.push_back(new face(
 					_vertices[b[0]], _vertices[b[1]], _vertices[b[2]], 0, -1));
 				_faces.back().set_color(f.color());
@@ -105,7 +105,7 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 		const tetrahedron &tet = m.tets()[gi];
 		for (int j = 0; j < 4; j++) {
 			const face &f = tet.f(j).flip();
-			if (!f.is_border() && tg.colors()[f.tet().idx()] == dom) {
+			if (!f.is_border() && static_cast<index>(tg.colors()[f.tet().idx()]) == dom) {
 				const index other_tet = tg2l[f.tet().idx()];
 				int fi = f.face_local_index();
 				_tets[i].f(j).set_flip(_tets[other_tet].f(fi));
@@ -391,7 +391,7 @@ void mesh::dump(std::ostream &os) const {
 		const face &f = _faces[4 * nT + i];
 		for (int j = 0; j < 3; j++)
 			b[j] = f.p(j).idx();
-		os << i << ". v = (" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl;
+		os << i << ". v = (" << b[0] << ", " << b[1] << ", " << b[2] << ")" << std::endl;
 	}
 
 	os << "Vert colors: " << std::endl;
@@ -631,7 +631,7 @@ bool mesh::checkVertexTetList(index &wrong, index &tetno, int &vertno, index &cn
 	index nV = _vertices.size();
 	cnt = 0;
 
-	for (int i = 0; i < nV; i++) {
+	for (index i = 0; i < nV; i++) {
 		const std::vector<tet_vertex> &vl = _vertices[i].tetrahedrons();
 		for (std::vector<tet_vertex>::const_iterator it = vl.begin();
 			it != vl.end(); it++)
@@ -655,7 +655,7 @@ bool mesh::checkVertexFaceList(index &wrong, index &faceno, int &vertno, index &
 	index nV = _vertices.size();
 	cnt = 0;
 
-	for (int i = 0; i < nV; i++) {
+	for (index i = 0; i < nV; i++) {
 		const std::vector<face_vertex> &vl = _vertices[i].faces();
 		for (std::vector<face_vertex>::const_iterator it = vl.begin();
 			it != vl.end(); it++)

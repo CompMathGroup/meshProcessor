@@ -161,13 +161,13 @@ vol_mesh::vol_mesh(const char *fn) {
 			continue;
 		}
 		if (state == ST_SURF_DATA) {
-			int sn, domin, domout, np;
+			int domout, np;
 			//sscanf(buf, "%d %lld %d %d %d %lld %lld %lld", &sn, &bndmat[iext], &domin, &domout, &np, 
 			//		&bnd[3*iext], &bnd[3*iext + 1], &bnd[3*iext + 2]);
 			char *p = buf;
-			sn = get_int(p);
+			get_int(p);
 			bndmat[iext] = get_ll(p);
-			domin = get_int(p);
+			get_int(p);
 			domout = get_int(p);
 			np = get_int(p);
 			bnd[3*iext + 0] = get_ll(p) - 1;

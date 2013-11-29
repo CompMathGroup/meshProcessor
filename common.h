@@ -3,15 +3,17 @@
 
 #include <string>
 #include <vector>
+#include <cstddef>
+#include <limits>
 
 namespace mesh3d {
 
-/** Signed index used to enumerate mesh elements (vertices, faces, etc). 
+/** Index used to enumerate mesh elements (vertices, faces, etc). 
 *
-* This type is signed, so negative values are valid. -1 is often used to indicate absent element */
-typedef signed long long index;
+* BAD_INDEX is used to indicate absent element */
+typedef size_t index;
 
-const index BAD_INDEX = -1ll;
+const index BAD_INDEX = std::numeric_limits<size_t>::max();
 
 /** Internal function to be wrapped in ASSERT macro */
 void assert(bool condition, const std::string message, const std::string file, const int line);
