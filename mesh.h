@@ -49,7 +49,9 @@ public:
 	/** Destroy mesh */
 	~mesh();
 	/** Return domain id */
-	index domain() const;
+	index domain() const { return _domain; }
+	/** Return domain count */
+	index domains() const { return _domains; }
 
 	/** Run various checks on mesh */
 	bool check(std::ostream *o = 0) const;
