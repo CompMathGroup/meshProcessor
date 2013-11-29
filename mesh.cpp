@@ -125,8 +125,9 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 		_faces[i].set_idx(i);
 }
 
-mesh::mesh(const simple_mesh &sm, index dom) {
+mesh::mesh(const simple_mesh &sm, index dom, index domains) {
 	_domain = dom;
+	_domains = domains;
 	index nV = sm.num_vertices();
 	for (index i = 0; i < nV; i++) {
 		const double *p = sm.vertex_coord(i);
@@ -467,7 +468,7 @@ bool mesh::check(std::ostream *o) const {
 
 	ok &= lastcheck = (_domain < _domains);
 	if (!lastcheck)
-		log(o, _ + "Domain number " + _domain " is not less than domain count " + _domains);
+		log(o, _ + "Domain number " + _domain + " is not less than domain count " + _domains);
 
 	ok &= lastcheck = checkVertexIndices(wrong);
 	if (!lastcheck)
