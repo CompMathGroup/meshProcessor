@@ -630,6 +630,9 @@ bool mesh::checkVertexTetList(index &wrong, index &tetno, int &vertno, index &cn
 	bool check, ret = true;
 	index nV = _vertices.size();
 	cnt = 0;
+	vertno = -1;
+	tetno = BAD_INDEX;
+	wrong = BAD_INDEX;
 
 	for (index i = 0; i < nV; i++) {
 		const std::vector<tet_vertex> &vl = _vertices[i].tetrahedrons();
@@ -654,6 +657,9 @@ bool mesh::checkVertexFaceList(index &wrong, index &faceno, int &vertno, index &
 	bool check, ret = true;
 	index nV = _vertices.size();
 	cnt = 0;
+	vertno = -1;
+	faceno = BAD_INDEX;
+	wrong = BAD_INDEX;
 
 	for (index i = 0; i < nV; i++) {
 		const std::vector<face_vertex> &vl = _vertices[i].faces();

@@ -73,7 +73,7 @@ vol_mesh::vol_mesh(const char *fn) {
 	nB = 0;
 	nT = 0;
 	int iext = 0;
-	int i, cnt;
+	int i = 0, cnt = 0;
 
 	State state = ST_NORM;
 
