@@ -36,6 +36,8 @@ const face *three_way_find_except(face_iter_t x, face_iter_t y, face_iter_t z, c
 
 mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 	_domain = dom;
+	_domains = tg.mapping().size();
+
 	typedef std::map<index, index> mapping_t;
 	mapping_t tg2l;
 	std::vector<index> tl2g;
@@ -204,7 +206,7 @@ mesh::mesh(const simple_mesh &sm, index dom) {
 */
 mesh::mesh(std::istream &is) {
 	uint64_t sig;
-	uint64_t nV, nT, nB, nI, dom;
+	uint64_t nV, nT, nB, nI, dom, doms;
 	double p[3];
 	uint64_t v[4];
 	uint64_t b[3];
@@ -214,6 +216,8 @@ mesh::mesh(std::istream &is) {
 		throw std::invalid_argument("Invalid mesh file signature");
 	is.read(reinterpret_cast<char *>(&dom), sizeof(dom));
 	_domain = dom;
+	is.read(reinterpret_cast<char *>(&doms), sizeof(doms));
+	_domains = doms;
 	is.read(reinterpret_cast<char *>(&nV), sizeof(nV));
 	is.read(reinterpret_cast<char *>(&nT), sizeof(nT));
 	is.read(reinterpret_cast<char *>(&nB), sizeof(nB));
@@ -275,7 +279,7 @@ mesh::mesh(std::istream &is) {
 void mesh::serialize(std::ostream &os) const {
 	uint64_t sig = MESH3D_SIGNATURE;
 	uint64_t nV, nT, nB, nI;
-	uint64_t dom = _domain;
+	uint64_t dom = _domain, doms = _domains;
 	double p[3];
 	uint64_t v[4];
 	uint64_t b[3];
@@ -290,6 +294,7 @@ void mesh::serialize(std::ostream &os) const {
 
 	os.write(reinterpret_cast<char *>(&sig), sizeof(sig));
 	os.write(reinterpret_cast<char *>(&dom), sizeof(dom));
+	os.write(reinterpret_cast<char *>(&doms), sizeof(doms));
 	os.write(reinterpret_cast<char *>(&nV), sizeof(nV));
 	os.write(reinterpret_cast<char *>(&nT), sizeof(nT));
 	os.write(reinterpret_cast<char *>(&nB), sizeof(nB));
@@ -349,7 +354,7 @@ void mesh::serialize(std::ostream &os) const {
 
 void mesh::dump(std::ostream &os) const {
 	uint64_t nV, nT, nB, nI;
-	uint64_t dom = _domain;
+	uint64_t dom = _domain, doms = _domains;
 	double p[3];
 	uint64_t v[4];
 	uint64_t b[3];
@@ -363,7 +368,7 @@ void mesh::dump(std::ostream &os) const {
 			nI++;
 
 	os << "Mesh dump" << std::endl;
-	os << "Domain #" << dom << std::endl;
+	os << "Domain #" << dom << " of " << doms << std::endl;
 	os << "Vertices: " << nV << std::endl;
 	os << "Tetras: " << nT << std::endl;
 	os << "Boundary faces: " << nB << std::endl;
@@ -459,6 +464,10 @@ bool mesh::check(std::ostream *o) const {
 
 	index nT = _tets.size();
 	index nF = _faces.size();
+
+	ok &= lastcheck = (_domain < _domains);
+	if (!lastcheck)
+		log(o, _ + "Domain number " + _domain " is not less than domain count " + _domains);
 
 	ok &= lastcheck = checkVertexIndices(wrong);
 	if (!lastcheck)

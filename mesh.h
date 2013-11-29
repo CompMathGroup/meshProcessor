@@ -20,6 +20,7 @@ class mesh {
 	ptr_vector<face> _faces;
 	ptr_vector<tetrahedron> _tets;
 	index _domain;
+	index _domains;
 	bool checkVertexIndices(index &wrong) const;
 	bool checkTetIndices(index &wrong) const;
 	bool checkFaceIndices(index &wrong) const;
@@ -35,7 +36,7 @@ class mesh {
 	mesh &operator=(const mesh &);
 public:
 	/** Construct mesh from simple mesh */
-	mesh(const simple_mesh &sm, index dom = 0);
+	mesh(const simple_mesh &sm, index dom = 0, index domains = 1);
 	/** Construct mesh in domain from global mesh and tet_graph  */
 	mesh(const mesh &sm, index dom, const tet_graph &tg);
 	/** Construct from binary stream */
