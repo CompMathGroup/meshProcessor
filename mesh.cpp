@@ -34,6 +34,7 @@ const face *three_way_find_except(face_iter_t x, face_iter_t y, face_iter_t z, c
 	}
 }
 
+#ifdef USE_METIS
 mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 	_domain = dom;
 	_domains = tg.mapping().size();
@@ -124,6 +125,7 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 	for (index i = 0; i < _faces.size(); i++)
 		_faces[i].set_idx(i);
 }
+#endif
 
 mesh::mesh(const simple_mesh &sm, index dom, index domains) {
 	_domain = dom;

@@ -8,7 +8,10 @@
 #include "tetrahedron.h"
 
 #include "simple_mesh.h"
-#include "mesh_graph.h"
+
+#ifdef USE_METIS
+# include "mesh_graph.h"
+#endif
 
 #include <vector>
 #include <ostream>
@@ -37,8 +40,10 @@ class mesh {
 public:
 	/** Construct mesh from simple mesh */
 	mesh(const simple_mesh &sm, index dom = 0, index domains = 1);
+#ifdef USE_METIS
 	/** Construct mesh in domain from global mesh and tet_graph  */
 	mesh(const mesh &sm, index dom, const tet_graph &tg);
+#endif
 	/** Construct from binary stream */
 	mesh(std::istream &i);
 	/** Export to binary stream */

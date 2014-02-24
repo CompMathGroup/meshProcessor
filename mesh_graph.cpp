@@ -1,3 +1,5 @@
+#ifdef USE_METIS
+
 #include "mesh_graph.h"
 #include "mesh.h"
 
@@ -54,3 +56,5 @@ bool tet_graph::partition(index num_parts) {
 
 	return true;
 }
+
+#endif

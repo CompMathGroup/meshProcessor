@@ -1,6 +1,8 @@
 #ifndef __MESH3D__MESH_GRAPH_H__
 #define __MESH3D__MESH_GRAPH_H__
 
+#ifdef USE_METIS
+
 #include "graph.h"
 #include <vector>
 #include <map>
@@ -34,5 +36,7 @@ public:
 };
 
 }
+
+#endif
 
 #endif

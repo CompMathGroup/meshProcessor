@@ -1,6 +1,8 @@
 #ifndef __MESH3D__GRAPH_H__
 #define __MESH3D__GRAPH_H__
 
+#ifdef USE_METIS
+
 #include "common.h"
 #include <vector>
 #include <set>
@@ -47,5 +49,7 @@ public:
 };
 
 }
+
+#endif
 
 #endif
