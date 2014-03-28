@@ -34,9 +34,13 @@ struct vector {
 
 #undef BINOP
 
-	/** Myltiply vector by number a */
+	/** Multiply vector by number a */
 	const vector operator *(const double a) const {
 		return vector(a * x, a * y, a * z);
+	}
+	/** Divide vector by number a */
+	const vector operator *(const double a) const {
+		return vector(x / a, y / a, z / a);
 	}
 	/** Scale vector by number a */
 	vector &operator *=(double a) {
@@ -94,6 +98,11 @@ inline const vector operator *(double a, const vector &b) {
 /** Return dot-product of two vectors */
 inline double dot(const vector &a, const vector &b) {
 	return a.dot(b);
+}
+
+/** Return triple product of three vectors, i.e. a.dot(b.cross(c)) */
+inline double dot(const vector &a, const vector &b, const vector &c) {
+	return a.dot(b % c);
 }
 
 /** Return squared norm of vector a */
