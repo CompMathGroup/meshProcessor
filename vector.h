@@ -105,7 +105,7 @@ inline double dot(const vector &a, const vector &b) {
 }
 
 /** Return triple product of three vectors, i.e. a.dot(b.cross(c)) */
-inline double dot(const vector &a, const vector &b, const vector &c) {
+inline double triple(const vector &a, const vector &b, const vector &c) {
 	return a.dot(b % c);
 }
 
