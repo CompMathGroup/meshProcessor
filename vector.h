@@ -42,6 +42,10 @@ struct vector {
 	const vector operator /(const double a) const {
 		return vector(x / a, y / a, z / a);
 	}
+	/** Negate a vector */
+	const vector operator -() const {
+		return vector(-x, -y, -z);
+	}
 	/** Scale vector by number a */
 	vector &operator *=(double a) {
 		x *= a;
