@@ -39,7 +39,7 @@ struct vector {
 		return vector(a * x, a * y, a * z);
 	}
 	/** Divide vector by number a */
-	const vector operator *(const double a) const {
+	const vector operator /(const double a) const {
 		return vector(x / a, y / a, z / a);
 	}
 	/** Scale vector by number a */
