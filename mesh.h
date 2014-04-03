@@ -63,10 +63,22 @@ public:
 
 	/** Return mesh vertices as array */
 	const ptr_vector<vertex> &vertices() const;
+	/** Return mesh vertex */
+	const vertex &vertices(index i) const {
+		return vertices()[i];
+	}
 	/** Return mesh faces as array */
 	const ptr_vector<face> &faces() const;
+	/** Return mesh face */
+	const face &faces(index i) const {
+		return faces()[i];
+	}
 	/** Return mesh tetrahedrons as array */
 	const ptr_vector<tetrahedron> &tets() const;
+	/** Return mesh face */
+	const tetrahedron &tets(index i) const {
+		return tets()[i];
+	}
 };
 
 }

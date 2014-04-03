@@ -35,7 +35,7 @@ protected:
 		for (index i = 0; i < _m.size(); i++) {
 			_nadj[i+1] = _nadj[i] + _m[i].size();
 			for (std::set<index>::const_iterator it = _m[i].begin();
-				it != _m[i].end(); it++) 
+				it != _m[i].end(); ++it) 
 			{
 				_adj.push_back(*it);
 			}
