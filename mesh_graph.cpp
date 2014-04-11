@@ -7,7 +7,7 @@ nodal_graph::nodal_graph(const mesh &m) : graph(m.vertices().size()) {
 	for (index i = 0; i < m.vertices().size(); i++) {
 		const std::vector<tet_vertex> &tl = m.vertices(i).tetrahedrons();
 		for (std::vector<tet_vertex>::const_iterator it = tl.begin();
-			it != tl.end(); it++)
+			it != tl.end(); ++it)
 		{
 			for (int j = 0; j < 4; j++)
 				if (j != it->li)
@@ -46,7 +46,7 @@ bool tet_graph::partition(index num_parts) {
 		typedef std::map<index, index> mapping_t;
 		index local = 0;
 		for (mapping_t::iterator it = subvert[d].begin();
-			it != subvert[d].end(); it++)
+			it != subvert[d].end(); ++it)
 		{
 			it->second = local++;
 		}

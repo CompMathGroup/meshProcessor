@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 
-void mesh3d::assert(bool condition, const std::string message, const std::string file, const int line) {
+void mesh3d::assert(bool condition, const std::string &message, const std::string &file, const int line) {
 	if (condition)
 		return;
 

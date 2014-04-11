@@ -17,8 +17,8 @@ typedef size_t index;
 
 const index BAD_INDEX = std::numeric_limits<size_t>::max();
 
-/** Internal function to be wrapped in ASSERT macro */
-void assert(bool condition, const std::string message, const std::string file, const int line);
+/** Internal function to be wrapped in ASSERT macro. Is not stripped in release */
+void assert(bool condition, const std::string &message, const std::string &file, const int line);
 
 /** A class for holding a vector of pointers
 *
@@ -43,7 +43,7 @@ public:
 	/** Release a pointer, without deleting it */
 	T *release(ptrdiff_t i) { T *tmp = _data[i]; _data[i] = 0; return tmp; }
 	/** Destroy ptr_vector and delete every pointer */
-	~ptr_vector() { for (typename std::vector<T *>::iterator it = _data.begin(); it != _data.end(); it++) delete *it; }
+	~ptr_vector() { for (typename std::vector<T *>::iterator it = _data.begin(); it != _data.end(); ++it) delete *it; }
 	/** Get ptr_vector size */
 	size_t size() const { return _data.size(); }
 	/** Resize ptr_vector */

@@ -45,7 +45,7 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 	const mapping_t &g2l = tg.mapping()[dom];
 	
 	for (mapping_t::const_iterator it = g2l.begin();
-		it != g2l.end(); it++)
+		it != g2l.end(); ++it)
 	{
 		const vertex &v = m.vertices(it->first);
 		_vertices.push_back(new vertex(v.r()));
@@ -344,7 +344,7 @@ void mesh::serialize(std::ostream &os) const {
 		os.write(reinterpret_cast<char *>(&i), sizeof(i));
 		os.write(reinterpret_cast<char *>(&nA), sizeof(nA));
 		for (std::map<index, index>::const_iterator it = _vertices[i].aliases().begin();
-			it != _vertices[i].aliases().end(); it++)
+			it != _vertices[i].aliases().end(); ++it)
 		{
 			uint64_t did, rid;
 			did = it->first;
@@ -433,7 +433,7 @@ void mesh::dump(std::ostream &os) const {
 			continue;
 		os << i << ". ";
 		for (std::map<index, index>::const_iterator it = _vertices[i].aliases().begin();
-			it != _vertices[i].aliases().end(); it++)
+			it != _vertices[i].aliases().end(); ++it)
 		{
 			uint64_t did, rid;
 			did = it->first;
@@ -649,7 +649,7 @@ bool mesh::checkVertexTetList(index &wrong, index &tetno, int &vertno, index &cn
 	for (index i = 0; i < nV; i++) {
 		const std::vector<tet_vertex> &vl = _vertices[i].tetrahedrons();
 		for (std::vector<tet_vertex>::const_iterator it = vl.begin();
-			it != vl.end(); it++)
+			it != vl.end(); ++it)
 		{
 			cnt++;
 			const tetrahedron *tet = it->t;
@@ -676,7 +676,7 @@ bool mesh::checkVertexFaceList(index &wrong, index &faceno, int &vertno, index &
 	for (index i = 0; i < nV; i++) {
 		const std::vector<face_vertex> &vl = _vertices[i].faces();
 		for (std::vector<face_vertex>::const_iterator it = vl.begin();
-			it != vl.end(); it++)
+			it != vl.end(); ++it)
 		{
 			cnt++;
 			const face *f = it->f;
