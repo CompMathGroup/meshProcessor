@@ -39,10 +39,46 @@ void vtk_stream::put<uint32_t>(uint32_t v) {
 }
 
 template<>
+void vtk_stream::put<int32_t>(int32_t v) {
+	union {
+		int32_t i;
+		char c[4];
+	} x;
+	x.i = __builtin_bswap32(v);
+	o.write(&x.c[0], sizeof(x));
+}
+
+template<>
+void vtk_stream::put<uint64_t>(uint64_t v) {
+	union {
+		uint64_t i;
+		char c[8];
+	} x;
+	x.i = __builtin_bswap64(v);
+	o.write(&x.c[0], sizeof(x));
+}
+
+template<>
+void vtk_stream::put<int64_t>(int64_t v) {
+	union {
+		int64_t i;
+		char c[8];
+	} x;
+	x.i = __builtin_bswap64(v);
+	o.write(&x.c[0], sizeof(x));
+}
+
+template<>
 const std::string vtk_stream::name<float>() const { return "float"; }
 
 template<>
 const std::string vtk_stream::name<double>() const { return "double"; }
+
+template<>
+const std::string vtk_stream::name<int>() const { return "int"; }
+
+template<>
+const std::string vtk_stream::name<unsigned int>() const { return "unsigned_int"; }
 
 }
 

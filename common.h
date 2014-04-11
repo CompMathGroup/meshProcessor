@@ -1,6 +1,8 @@
 #ifndef __MESH3D__COMMON_H__
 #define __MESH3D__COMMON_H__
 
+#include "config.h"
+
 #include <string>
 #include <vector>
 #include <cstddef>

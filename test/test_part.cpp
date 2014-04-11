@@ -20,11 +20,11 @@ int main() {
 
 		std::vector<float> u(m.tets().size());
 		for (index i = 0; i < m.tets().size(); i++) {
-			u[i] = tg.colors()[i];
+			u[i] = tg.colors(i);
 		}
 		vtk_stream vtk("mesh.vtk");
 		vtk.write_header(m, "Coloring");
-		vtk.append_cell_data(&u[0], "u");
+		vtk.append_cell_data(u.data(), "u");
 		vtk.close();
 
 		for (int domain = 0; domain < num_parts; domain++) {
@@ -38,9 +38,9 @@ int main() {
 			vtk2.write_header(part, buf);
 			std::vector<float> a(part.vertices().size());
 			for (index i = 0; i < part.vertices().size(); i++) {
-				a[i] = part.vertices()[i].aliases().size();
+				a[i] = part.vertices(i).aliases().size();
 			}
-			vtk2.append_point_data(&a[0], "aliases");
+			vtk2.append_point_data(a.data(), "aliases");
 			vtk2.close();
 
 			sprintf(buf, "part%d.m3d", domain);
@@ -55,6 +55,7 @@ int main() {
 		}
 	} catch (std::exception &e) {
 		std::cerr << "Exception occured: " << e.what() << std::endl;
+		return 1;
 	}
 	return 0;
 }

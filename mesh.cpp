@@ -47,15 +47,15 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 	for (mapping_t::const_iterator it = g2l.begin();
 		it != g2l.end(); it++)
 	{
-		const vertex &v = m.vertices()[it->first];
+		const vertex &v = m.vertices(it->first);
 		_vertices.push_back(new vertex(v.r()));
 		_vertices.back().set_color(v.color());
 	}
 
 	index nT = m.tets().size();
 	for (index i = 0, k = 0; k < nT; k++) {
-		const tetrahedron &tet = m.tets()[k];
-		if (static_cast<index>(tg.colors()[tet.idx()]) != dom)
+		const tetrahedron &tet = m.tets(k);
+		if (static_cast<index>(tg.colors(tet.idx())) != dom)
 			continue;
 		index v[4];
 		for (int j = 0; j < 4; j++)
@@ -77,7 +77,7 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 	index b[3];
 	for (index i = 0; i < nT; i++) {
 		index gi = tl2g[i];
-		const tetrahedron &tet = m.tets()[gi];
+		const tetrahedron &tet = m.tets(gi);
 		for (int j = 0; j < 4; j++) {
 			const face &f = tet.f(j).flip();
 			for (int k = 0; k < 3; k++) {
@@ -93,7 +93,7 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 						vx.add(d, mit->second);
 				}
 			}
-			if (f.is_border() || static_cast<index>(tg.colors()[f.tet().idx()]) != dom) {
+			if (f.is_border() || static_cast<index>(tg.colors(f.tet().idx())) != dom) {
 				_faces.push_back(new face(
 					_vertices[b[0]], _vertices[b[1]], _vertices[b[2]], 0, -1));
 				_faces.back().set_color(f.color());
@@ -105,10 +105,10 @@ mesh::mesh(const mesh &m, index dom, const tet_graph &tg) {
 
 	for (index i = 0; i < nT; i++) {
 		index gi = tl2g[i];
-		const tetrahedron &tet = m.tets()[gi];
+		const tetrahedron &tet = m.tets(gi);
 		for (int j = 0; j < 4; j++) {
 			const face &f = tet.f(j).flip();
-			if (!f.is_border() && static_cast<index>(tg.colors()[f.tet().idx()]) == dom) {
+			if (!f.is_border() && static_cast<index>(tg.colors(f.tet().idx())) == dom) {
 				const index other_tet = tg2l[f.tet().idx()];
 				int fi = f.face_local_index();
 				_tets[i].f(j).set_flip(_tets[other_tet].f(fi));

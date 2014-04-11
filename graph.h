@@ -1,9 +1,10 @@
 #ifndef __MESH3D__GRAPH_H__
 #define __MESH3D__GRAPH_H__
 
+#include "common.h"
+
 #ifdef USE_METIS
 
-#include "common.h"
 #include <vector>
 #include <set>
 #include <metis.h>
@@ -46,6 +47,7 @@ protected:
 	bool partition(index num_parts);
 public:
 	const std::vector<idx_t> &colors() const { return _colors; }
+	const idx_t &colors(index i) const { return _colors[i]; }
 };
 
 }

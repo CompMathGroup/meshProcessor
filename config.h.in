@@ -1,0 +1,6 @@
+#ifndef __MESH3D__CONFIG_H__
+#define __MESH3D__CONFIG_H__
+
+#cmakedefine USE_METIS
+
+#endif

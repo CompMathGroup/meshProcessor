@@ -3,7 +3,15 @@
 
 using namespace mesh3d;
 
-int main() {
+static int allocated;
+
+struct foo {
+	int v;
+	foo(int v) : v(v) { allocated += sizeof(int); }
+	~foo() { allocated -= sizeof(int); }
+};
+
+void test() {
 	ptr_vector<int> foo(10);
 
 	for (int i = 0; i < 10; i++)
@@ -13,6 +21,16 @@ int main() {
 
 	for (int i = 0; i < 10; i++)
 		std::cout << foo[i] << std::endl;
-	
-	return 0;
+}
+
+int main() {
+	allocated = 0;
+
+	try {
+		test();
+	} catch (...) {
+		return 1;
+	}
+
+	return allocated != 0;
 }

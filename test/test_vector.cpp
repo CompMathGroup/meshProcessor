@@ -14,5 +14,20 @@ int main() {
 	v += 2 * e3;
 
 	std::cout << "v = " << v << std::endl;
-	std::cout << "||e1 x e2 - e3|| = " << norm2((e1 % e2) - e3) << std::endl;
+
+	double x;
+
+	x = norm2((e1 % e2) - e3);
+	std::cout << "||e1 x e2 - e3||^2 = " << v << std::endl;
+
+	if (fabs(x) > 1e-28)
+		return 1;
+
+	x = triple(e1, e2, e3);
+	std::cout << "(e1, e2, e3) = " << v << std::endl;
+
+	if (fabs(x - 1) > 1e-14)
+		return 1;
+
+	return 0;
 }
